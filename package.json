@@ -1,0 +1,36 @@
+{
+  "name": "model",
+  "version": "1.0.0",
+  "description": "",
+  "main": "gulpfile.js",
+  "dependencies": {
+    "gulp": "^3.8.10",
+    "gulp-coffee": "^2.2.0",
+    "gulp-concat": "^2.4.2",
+    "gulp-if": "^1.2.5",
+    "gulp-jade": "^0.10.0",
+    "gulp-plumber": "^0.6.6",
+    "gulp-stylus": "^1.3.4",
+    "gulp-webserver": "^0.9.0",
+    "inflight": "^1.0.4",
+    "inherits": "^2.0.1",
+    "lru-cache": "^2.5.0",
+    "main-bower-files": "^2.4.1",
+    "once": "^1.3.1",
+    "sigmund": "^1.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/endotakashi1992/base"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/endotakashi1992/base/issues"
+  },
+  "homepage": "https://github.com/endotakashi1992/base"
+}

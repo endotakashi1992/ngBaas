@@ -1,7 +1,7 @@
 extends layout
 
 block body
-  h1 HEoooooooooo
-  button.btn.btn-primary
-    |CHANEL
-  span.glyphicon.glyphicon-search(aria-hidden='true')
+  .container(ng-controller='tweets')
+    form(ng-submit="add()")
+      input(ng-model="tweet.text")
+    span(ng-repeat="t in tweets") {{t.text}}

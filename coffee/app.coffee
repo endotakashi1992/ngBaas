@@ -1,10 +1,15 @@
 angular.module('myApp', ['ngRoute','ngResource'])
-.factory 'User', ($resource)->
-  return $resource '/api/users/:id'
-.controller 'tweets',($scope,User)->
-  console.log User
-  $scope.tweet = {}
-  $scope.tweets = []
-  $scope.tweet.text = "hai"
+.factory 'Collection', ($resource)->
+  _Collection = (name)->
+    return $resource("/api/#{name}/:_id")
+  return _Collection
+.controller 'tweets',($scope,$resource,Collection)->
+  Tweets = Collection('tweets')
+  tweet = Tweets.get({_id:"9DiPZJKDQzVWwd9p"})
+  console.log tweet
+  $scope.tweet = new Tweets()
+  $scope.tweets = Tweets.query()
+  $scope.tweet.text = ""
   $scope.add = ->
-    $scope.tweets.push $scope.tweet
+    $scope.tweet.$save()
+    $scope.tweet = new Tweets()

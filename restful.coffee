@@ -38,5 +38,14 @@ app.delete "/api/:resource",(req,res) ->
   db = createDB(resource)
   db.remove req.body,(e,d)->
     res.send d
+app.get "/stream",(req,res)->
+  res.writeHead 200,
+    "Content-Type": "text/event-stream"
+    "Cache-Control": "no-cache"
+    Connection: "keep-alive"
+  res.write "\n"
+  setInterval ->
+    res.write('data: ' + "HEI!!!!" + ' \n\n')
+  , 1000
 app.use(express.static(__dirname + '/public'))
 app.listen 3000

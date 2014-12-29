@@ -11,10 +11,18 @@ createDB = (name)->
   return collections[name] || collections[name] = new Datastore({filename:".tmp/data/#{name}.json",autoload:true})
 
 app.get "/api/:resource", (req, res) ->
+  res.writeHead 200,
+    "Content-Type": "text/event-stream"
+    "Cache-Control": "no-cache"
+    Connection: "keep-alive"
+  res.write "\n"
   resource = req.params.resource
   db = createDB(resource)
   db.find {},(e,docs)->
-    res.send docs
+    setInterval ->
+      doc = docs.pop()
+      res.write('data: ' + JSON.stringify(doc) + ' \n\n')
+    , 1000
 app.get "/api/:resource/:_id", (req, res) ->
   _id = req.params._id
   resource = req.params.resource

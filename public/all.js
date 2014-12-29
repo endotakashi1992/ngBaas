@@ -13,7 +13,7 @@
   app.factory('Collection', function() {
     return function(name) {
       return {
-        find: function() {
+        find: function(query) {
           var es, result;
           result = [];
           es = new EventSource("/api/" + name);

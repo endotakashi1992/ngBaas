@@ -1,7 +1,7 @@
 app.factory 'Collection',->
   return (name)->
     return {
-      find:->
+      find:(query)->
         result = []
         es = new EventSource("/api/#{name}")
         es.addEventListener "message", (event) ->

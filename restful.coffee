@@ -10,6 +10,9 @@ collections = {}
 createDB = (name)->
   return collections[name] || collections[name] = new Datastore({filename:".tmp/data/#{name}.json",autoload:true})
 
+EventEmitter = require('events').EventEmitter
+ev = new EventEmitter
+
 app.get "/api/:resource", (req, res) ->
   console.log req.query
   res.writeHead 200,
@@ -23,17 +26,22 @@ app.get "/api/:resource", (req, res) ->
   db.find query,(e,docs)->
     docs.forEach (doc)->
       res.write('data: ' + JSON.stringify(doc) + ' \n\n')
+  ev.on "#{resource}:create",(data)->
+    query._id = data._id
+    db.findOne query,(e,doc)->
+      res.write('data: ' + JSON.stringify(doc) + ' \n\n')
 app.get "/api/:resource/:_id", (req, res) ->
   _id = req.params._id
   resource = req.params.resource
   db = createDB(resource)
   db.findOne {_id:_id},(e,doc)->
     res.send doc
-app.post "/api/:resource", (req, res) ->
+app.post "/api/:resource", (req, res)->
   resource = req.params.resource
   db = createDB(resource)
-  db.insert req.body,(e,d)->
-    res.send d
+  db.insert req.body,(e,doc)->
+    ev.emit "#{resource}:create",(doc)
+    res.send doc
 app.put "/api/:resource/:_id",(req,res) ->
   resource = req.params.resource
   _id = req.params._id

@@ -5,7 +5,8 @@ db = mongojs('e1xy8rf20j.cloudapp.net:27017/mydb')
 coll = db.collection('coll')
 
 EventEmitter = require('events').EventEmitter
-
+ev = new EventEmitter
+ev.on ''
 coll.insert {_id:"2",text:"ok"}
 coll.findOne {_id:"2",text:"ok"},(e,doc)->
   console.log e,doc

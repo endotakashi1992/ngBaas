@@ -4,7 +4,19 @@ dump = (obj)->
     str += "&"  unless str is ""
     str += key + "=" + obj[key]
   return str
-app.factory 'Collection',($http)->
+app = angular.module 'ngBaas',[]
+createDirective = (name)->
+  app.directive name,($http)->
+    restrict: "A"
+    link:(scope,elem,attrs)->
+      _id = attrs[name]
+      $http.get("/api/#{name}s/#{_id}").
+      success (data)->
+        angular.forEach data,(val,key)->
+          scope[key] = val
+createDirective 'user'
+createDirective 'tag'
+.factory 'Collection',($http)->
   (name)->
     {
       find:(query)->

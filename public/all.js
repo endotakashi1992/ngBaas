@@ -1,19 +1,12 @@
 (function() {
-  window.app = angular.module('myApp', ['ngRoute', 'ngResource']);
-
-  app.controller('tweets', function($scope, Collection) {
+  angular.module('myApp', ['ngRoute', 'ngResource', 'ngBaas']).controller('tweets', function($scope, Collection) {
     return window.Tweets = Collection('tweets');
   });
 
 }).call(this);
 
 (function() {
-
-
-}).call(this);
-
-(function() {
-  var dump;
+  var app, createDirective, dump;
 
   dump = function(obj) {
     var key, str;
@@ -27,7 +20,28 @@
     return str;
   };
 
-  app.factory('Collection', function($http) {
+  app = angular.module('ngBaas', []);
+
+  createDirective = function(name) {
+    return app.directive(name, function($http) {
+      return {
+        restrict: "A",
+        link: function(scope, elem, attrs) {
+          var _id;
+          _id = attrs[name];
+          return $http.get("/api/" + name + "s/" + _id).success(function(data) {
+            return angular.forEach(data, function(val, key) {
+              return scope[key] = val;
+            });
+          });
+        }
+      };
+    });
+  };
+
+  createDirective('user');
+
+  createDirective('tag').factory('Collection', function($http) {
     return function(name) {
       return {
         find: function(query) {

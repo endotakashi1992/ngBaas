@@ -1,4 +1,15 @@
+Set = (array)->
+  result = array || []
+  result.add = (value)->
+    angular.forEach result,(val,key)->
+      if val._id == value._id
+        result.pop(key)
+    result.push value
+  return result
+
 dump = (obj)->
+  if !obj
+    return ""
   str = "?"
   for key of obj
     str += "&"  unless str is ""
@@ -25,12 +36,12 @@ app = angular.module 'ngBaas',[]
       $provide.factory plur_cap,($http,$rootScope)->
         {
           find:(query)->
-            result = []
+            result = Set()
             query_str = dump query
             es = new EventSource("/api/#{plur}#{query_str}")
             es.addEventListener "message", (event) ->
               $rootScope.$apply ->
-                result.push JSON.parse(event.data)
+                result.add JSON.parse(event.data)
             return result
           findOne:(_id)->
             result = {}

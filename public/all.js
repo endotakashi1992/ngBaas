@@ -14,10 +14,27 @@
 }).call(this);
 
 (function() {
-  var app, dump;
+  var Set, app, dump;
+
+  Set = function(array) {
+    var result;
+    result = array || [];
+    result.add = function(value) {
+      angular.forEach(result, function(val, key) {
+        if (val._id === value._id) {
+          return result.pop(key);
+        }
+      });
+      return result.push(value);
+    };
+    return result;
+  };
 
   dump = function(obj) {
     var key, str;
+    if (!obj) {
+      return "";
+    }
     str = "?";
     for (key in obj) {
       if (str !== "") {
@@ -57,12 +74,12 @@
           return {
             find: function(query) {
               var es, query_str, result;
-              result = [];
+              result = Set();
               query_str = dump(query);
               es = new EventSource("/api/" + plur + query_str);
               es.addEventListener("message", function(event) {
                 return $rootScope.$apply(function() {
-                  return result.push(JSON.parse(event.data));
+                  return result.add(JSON.parse(event.data));
                 });
               });
               return result;

@@ -2,9 +2,8 @@
   angular.module('myApp', ['ngRoute', 'ngResource', 'ngBaas']).config(function(baasProvider) {
     return baasProvider.collection('user');
   }).controller('tweets', function($scope, Users) {
-    return window.users = Users.find({
-      text: "hello"
-    });
+    $scope.users = Users.find();
+    return window.Users = Users;
   });
 
 }).call(this);
@@ -54,7 +53,7 @@
             }
           };
         });
-        return $provide.factory(plur_cap, function($http) {
+        return $provide.factory(plur_cap, function($http, $rootScope) {
           return {
             find: function(query) {
               var es, query_str, result;
@@ -62,7 +61,9 @@
               query_str = dump(query);
               es = new EventSource("/api/" + plur + query_str);
               es.addEventListener("message", function(event) {
-                return result.push(JSON.parse(event.data));
+                return $rootScope.$apply(function() {
+                  return result.push(JSON.parse(event.data));
+                });
               });
               return result;
             },

@@ -22,14 +22,15 @@ app = angular.module 'ngBaas',[]
           success (data)->
             angular.forEach data,(val,key)->
               scope[key] = val
-      $provide.factory plur_cap,($http)->
+      $provide.factory plur_cap,($http,$rootScope)->
         {
           find:(query)->
             result = []
             query_str = dump query
             es = new EventSource("/api/#{plur}#{query_str}")
             es.addEventListener "message", (event) ->
-              result.push JSON.parse(event.data)
+              $rootScope.$apply ->
+                result.push JSON.parse(event.data)
             return result
           findOne:(_id)->
             result = {}
@@ -47,28 +48,3 @@ app = angular.module 'ngBaas',[]
             return result
         }
   }
-# app.factory 'Collection',($http)->
-#   (name)->
-#     {
-#       find:(query)->
-#         result = []
-#         query_str = dump query
-#         es = new EventSource("/api/#{name}?#{query_str}")
-#         es.addEventListener "message", (event) ->
-#           result.push JSON.parse(event.data)
-#         return result
-#       findOne:(_id)->
-#         result = {}
-#         $http.get("/api/#{name}/#{_id}").
-#         success (data)->
-#           angular.forEach data,(val,key)->
-#             result[key] = val
-#         return result
-#       insert:(data)->
-#         result = {}
-#         $http.post("/api/#{name}",data).
-#         success (data)->
-#           angular.forEach data,(val,key)->
-#             result[key] = val
-#         return result
-#     }

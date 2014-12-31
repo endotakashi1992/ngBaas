@@ -2,6 +2,7 @@ extends layout
 
 block body
   .container(ng-controller='tweets')
+    div(ng-repeat="t in users") {{t}}
     div(user="5oyDimuDuX4vJeeK") {{name}}
     form(ng-submit="add()")
       input(ng-model="tweet.text")

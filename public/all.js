@@ -1,12 +1,13 @@
 (function() {
   angular.module('myApp', ['ngRoute', 'ngResource', 'ngBaas']).controller('tweets', function($scope, Collection) {
-    return window.Tweets = Collection('tweets');
+    window.Tweets = Collection('tweets');
+    return window.Users = Collection('users');
   });
 
 }).call(this);
 
 (function() {
-  var app, createDirective, dump;
+  var app, dump;
 
   dump = function(obj) {
     var key, str;
@@ -22,14 +23,15 @@
 
   app = angular.module('ngBaas', []);
 
-  createDirective = function(name) {
+  window.createDirective = function(name) {
     return app.directive(name, function($http) {
       return {
         restrict: "A",
         link: function(scope, elem, attrs) {
-          var _id;
+          var plur, _id;
           _id = attrs[name];
-          return $http.get("/api/" + name + "s/" + _id).success(function(data) {
+          plur = inflection.pluralize(name);
+          return $http.get("/api/" + plur + "/" + _id).success(function(data) {
             return angular.forEach(data, function(val, key) {
               return scope[key] = val;
             });
@@ -39,10 +41,16 @@
     });
   };
 
+  app.factory;
+
   createDirective('user');
 
-  createDirective('tag').factory('Collection', function($http) {
+  app.factory('Collection', function($http) {
     return function(name) {
+      var sig;
+      createDirective('user');
+      sig = inflection.singularize(name);
+      createDirective(sig);
       return {
         find: function(query) {
           var es, query_str, result;

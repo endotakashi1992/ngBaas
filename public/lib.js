@@ -53520,6 +53520,462 @@ function ngViewFillContentFactory($compile, $controller, $route) {
 
 })(window, window.angular);
 
+(function (root, pluralize) {
+  /* istanbul ignore else */
+  if (typeof require === 'function' && typeof exports === 'object' && typeof module === 'object') {
+    // Node.
+    module.exports = pluralize();
+  } else if (typeof define === 'function' && define.amd) {
+    // AMD, registers as an anonymous module.
+    define(function () {
+      return pluralize();
+    });
+  } else {
+    // Browser global.
+    root.pluralize = pluralize();
+  }
+})(this, function () {
+  // Rule storage - pluralize and singularize need to be run sequentially,
+  // while other rules can be optimized using an object for instant lookups.
+  var pluralRules      = [];
+  var singularRules    = [];
+  var uncountables     = {};
+  var irregularPlurals = {};
+  var irregularSingles = {};
+
+  /**
+   * Title case a string.
+   *
+   * @param  {string} str
+   * @return {string}
+   */
+  function toTitleCase (str) {
+    return str.charAt(0).toUpperCase() + str.substr(1).toLowerCase();
+  }
+
+  /**
+   * Sanitize a pluralization rule to a usable regular expression.
+   *
+   * @param  {(RegExp|string)} rule
+   * @return {RegExp}
+   */
+  function sanitizeRule (rule) {
+    if (typeof rule === 'string') {
+      return new RegExp('^' + rule + '$', 'i');
+    }
+
+    return rule;
+  }
+
+  /**
+   * Pass in a word token to produce a function that can replicate the case on
+   * another word.
+   *
+   * @param  {string}   word
+   * @param  {string}   token
+   * @return {Function}
+   */
+  function restoreCase (word, token) {
+    // Upper cased words. E.g. "HELLO".
+    if (word === word.toUpperCase()) {
+      return token.toUpperCase();
+    }
+
+    // Title cased words. E.g. "Title".
+    if (word[0] === word[0].toUpperCase()) {
+      return toTitleCase(token);
+    }
+
+    // Lower cased words. E.g. "test".
+    return token.toLowerCase();
+  }
+
+  /**
+   * Interpolate a regexp string.
+   *
+   * @param  {[type]} str  [description]
+   * @param  {[type]} args [description]
+   * @return {[type]}      [description]
+   */
+  function interpolate (str, args) {
+    return str.replace(/\$(\d{1,2})/g, function (match, index) {
+      return args[index] || '';
+    });
+  }
+
+  /**
+   * Sanitize a word by passing in the word and sanitization rules.
+   *
+   * @param  {String}   word
+   * @param  {Array}    collection
+   * @return {String}
+   */
+  function sanitizeWord (word, collection) {
+    // Empty string or doesn't need fixing.
+    if (!word.length || uncountables.hasOwnProperty(word)) {
+      return word;
+    }
+
+    var len = collection.length;
+
+    // Iterate over the sanitization rules and use the first one to match.
+    while (len--) {
+      var rule = collection[len];
+
+      // If the rule passes, return the replacement.
+      if (rule[0].test(word)) {
+        return word.replace(rule[0], function (match, index, word) {
+          var result = interpolate(rule[1], arguments);
+
+          if (match === '') {
+            return restoreCase(word[index - 1], result);
+          }
+
+          return restoreCase(match, result);
+        });
+      }
+    }
+
+    return word;
+  }
+
+  /**
+   * Replace a word with the updated word.
+   *
+   * @param  {Object}   replaceMap
+   * @param  {Object}   keepMap
+   * @param  {Array}    rules
+   * @return {Function}
+   */
+  function replaceWord (replaceMap, keepMap, rules) {
+    return function (word) {
+      // Get the correct token and case restoration functions.
+      var token = word.toLowerCase();
+
+      // Check against the keep object map.
+      if (keepMap.hasOwnProperty(token)) {
+        return restoreCase(word, token);
+      }
+
+      // Check against the replacement map for a direct word replacement.
+      if (replaceMap.hasOwnProperty(token)) {
+        return restoreCase(word, replaceMap[token]);
+      }
+
+      // Run all the rules against the word.
+      return sanitizeWord(word, rules);
+    };
+  }
+
+  /**
+   * Pluralize or singularize a word based on the passed in count.
+   *
+   * @param  {String}  word
+   * @param  {Number}  count
+   * @param  {Boolean} inclusive
+   * @return {String}
+   */
+  function pluralize (word, count, inclusive) {
+    var pluralized = count === 1 ?
+      pluralize.singular(word) : pluralize.plural(word);
+
+    return (inclusive ? count + ' ' : '') + pluralized;
+  }
+
+  /**
+   * Pluralize a word.
+   *
+   * @type {Function}
+   */
+  pluralize.plural = replaceWord(
+    irregularSingles, irregularPlurals, pluralRules
+  );
+
+  /**
+   * Singularize a word.
+   *
+   * @type {Function}
+   */
+  pluralize.singular = replaceWord(
+    irregularPlurals, irregularSingles, singularRules
+  );
+
+  /**
+   * Add a pluralization rule to the collection.
+   *
+   * @param {(string|RegExp)} rule
+   * @param {string}          replacement
+   */
+  pluralize.addPluralRule = function (rule, replacement) {
+    pluralRules.push([sanitizeRule(rule), replacement]);
+  };
+
+  /**
+   * Add a singularization rule to the collection.
+   *
+   * @param {(string|RegExp)} rule
+   * @param {string}          replacement
+   */
+  pluralize.addSingularRule = function (rule, replacement) {
+    singularRules.push([sanitizeRule(rule), replacement]);
+  };
+
+  /**
+   * Add an uncountable word rule.
+   *
+   * @param {(string|RegExp)} word
+   */
+  pluralize.addUncountableRule = function (word) {
+    if (typeof word === 'string') {
+      return uncountables[word.toLowerCase()] = true;
+    }
+
+    // Set singular and plural references for the word.
+    pluralize.addPluralRule(word, '$0');
+    pluralize.addSingularRule(word, '$0');
+  };
+
+  /**
+   * Add an irregular word definition.
+   *
+   * @param {String} single
+   * @param {String} plural
+   */
+  pluralize.addIrregularRule = function (single, plural) {
+    plural = plural.toLowerCase();
+    single = single.toLowerCase();
+
+    irregularSingles[single] = plural;
+    irregularPlurals[plural] = single;
+  };
+
+  /**
+   * Irregular rules.
+   */
+  [
+    // Pronouns.
+    ['I',        'we'],
+    ['me',       'us'],
+    ['he',       'they'],
+    ['she',      'they'],
+    ['them',     'them'],
+    ['myself',   'ourselves'],
+    ['yourself', 'yourselves'],
+    ['itself',   'themselves'],
+    ['herself',  'themselves'],
+    ['himself',  'themselves'],
+    ['themself', 'themselves'],
+    ['this',     'these'],
+    ['that',     'those'],
+    // Words ending in with a consonant and `o`.
+    ['volcano', 'volcanoes'],
+    ['tornado', 'tornadoes'],
+    ['torpedo', 'torpedoes'],
+    // Ends with `us`.
+    ['genus',  'genera'],
+    ['viscus', 'viscera'],
+    // Ends with `ma`.
+    ['stigma',   'stigmata'],
+    ['stoma',    'stomata'],
+    ['dogma',    'dogmata'],
+    ['lemma',    'lemmata'],
+    ['schema',   'schemata'],
+    ['anathema', 'anathemata'],
+    // Other irregular rules.
+    ['ox',      'oxen'],
+    ['axe',     'axes'],
+    ['die',     'dice'],
+    ['yes',     'yeses'],
+    ['foot',    'feet'],
+    ['eave',    'eaves'],
+    ['goose',   'geese'],
+    ['tooth',   'teeth'],
+    ['quiz',    'quizzes'],
+    ['human',   'humans'],
+    ['proof',   'proofs'],
+    ['carve',   'carves'],
+    ['valve',   'valves'],
+    ['thief',   'thieves'],
+    ['genie',   'genies'],
+    ['groove',  'grooves'],
+    ['pickaxe', 'pickaxes'],
+    ['whiskey', 'whiskies']
+  ].forEach(function (rule) {
+    return pluralize.addIrregularRule(rule[0], rule[1]);
+  });
+
+  /**
+   * Pluralization rules.
+   */
+  [
+    [/s?$/i, 's'],
+    [/([^aeiou]ese)$/i, '$1'],
+    [/(ax|test)is$/i, '$1es'],
+    [/(alias|[^aou]us|tlas|gas|ris)$/i, '$1es'],
+    [/(e[mn]u)s?$/i, '$1s'],
+    [/([^l]ias|[aeiou]las|[emjzr]as|[iu]am)$/i, '$1'],
+    [/(alumn|syllab|octop|vir|radi|nucle|fung|cact|stimul|termin|bacill|foc|uter|loc|strat)(?:us|i)$/i, '$1i'],
+    [/(alumn|alg|vertebr)(?:a|ae)$/i, '$1ae'],
+    [/(seraph|cherub)(?:im)?$/i, '$1im'],
+    [/(her|at|gr)o$/i, '$1oes'],
+    [/(agend|addend|millenni|dat|extrem|bacteri|desiderat|strat|candelabr|errat|ov|symposi|curricul|automat|quor)(?:a|um)$/i, '$1a'],
+    [/(apheli|hyperbat|periheli|asyndet|noumen|phenomen|criteri|organ|prolegomen|\w+hedr)(?:a|on)$/i, '$1a'],
+    [/sis$/i, 'ses'],
+    [/(?:(i)fe|(ar|l|ea|eo|oa|hoo)f)$/i, '$1$2ves'],
+    [/([^aeiouy]|qu)y$/i, '$1ies'],
+    [/([^ch][ieo][ln])ey$/i, '$1ies'],
+    [/(x|ch|ss|sh|zz)$/i, '$1es'],
+    [/(matr|cod|mur|sil|vert|ind|append)(?:ix|ex)$/i, '$1ices'],
+    [/(m|l)(?:ice|ouse)$/i, '$1ice'],
+    [/(pe)(?:rson|ople)$/i, '$1ople'],
+    [/(child)(?:ren)?$/i, '$1ren'],
+    [/eaux$/i, '$0'],
+    [/m[ae]n$/i, 'men']
+  ].forEach(function (rule) {
+    return pluralize.addPluralRule(rule[0], rule[1]);
+  });
+
+  /**
+   * Singularization rules.
+   */
+  [
+    [/s$/i, ''],
+    [/(ss)$/i, '$1'],
+    [/((a)naly|(b)a|(d)iagno|(p)arenthe|(p)rogno|(s)ynop|(t)he)(?:sis|ses)$/i, '$1sis'],
+    [/(^analy)(?:sis|ses)$/i, '$1sis'],
+    [/([^aeflor])ves$/i, '$1fe'],
+    [/(hive|tive|dr?ive)s$/i, '$1'],
+    [/(ar|(?:wo|[ae])l|[eo][ao])ves$/i, '$1f'],
+    [/([^aeiouy]|qu)ies$/i, '$1y'],
+    [/(^[pl]|zomb|^(?:neck)?t|[aeo][lt]|cut)ies$/i, '$1ie'],
+    [/([^c][eor]n|smil)ies$/i, '$1ey'],
+    [/(m|l)ice$/i, '$1ouse'],
+    [/(seraph|cherub)im$/i, '$1'],
+    [/(x|ch|ss|sh|zz|tto|go|cho|alias|[^aou]us|tlas|gas|(?:her|at|gr)o|ris)(?:es)?$/i, '$1'],
+    [/(e[mn]u)s?$/i, '$1'],
+    [/(movie|twelve)s$/i, '$1'],
+    [/(cris|test|diagnos)(?:is|es)$/i, '$1is'],
+    [/(alumn|syllab|octop|vir|radi|nucle|fung|cact|stimul|termin|bacill|foc|uter|loc|strat)(?:us|i)$/i, '$1us'],
+    [/(agend|addend|millenni|dat|extrem|bacteri|desiderat|strat|candelabr|errat|ov|symposi|curricul|automat|quor)a$/i, '$1um'],
+    [/(apheli|hyperbat|periheli|asyndet|noumen|phenomen|criteri|organ|prolegomen|\w+hedr)a$/i, '$1on'],
+    [/(alumn|alg|vertebr)ae$/i, '$1a'],
+    [/(cod|mur|sil|vert|ind)ices$/i, '$1ex'],
+    [/(matr|append)ices$/i, '$1ix'],
+    [/(pe)(rson|ople)$/i, '$1rson'],
+    [/(child)ren$/i, '$1'],
+    [/(eau)x?$/i, '$1'],
+    [/men$/i, 'man']
+  ].forEach(function (rule) {
+    return pluralize.addSingularRule(rule[0], rule[1]);
+  });
+
+  /**
+   * Uncountable rules.
+   */
+  [
+    // Singular words with no plurals.
+    'advice',
+    'agenda',
+    'bison',
+    'bream',
+    'buffalo',
+    'carp',
+    'chassis',
+    'cod',
+    'cooperation',
+    'corps',
+    'digestion',
+    'debris',
+    'diabetes',
+    'energy',
+    'equipment',
+    'elk',
+    'excretion',
+    'expertise',
+    'flounder',
+    'gallows',
+    'graffiti',
+    'headquarters',
+    'health',
+    'herpes',
+    'highjinks',
+    'homework',
+    'information',
+    'jeans',
+    'justice',
+    'kudos',
+    'labour',
+    'machinery',
+    'mackerel',
+    'media',
+    'mews',
+    'moose',
+    'news',
+    'pike',
+    'plankton',
+    'pliers',
+    'pollution',
+    'premises',
+    'rain',
+    'rice',
+    'salmon',
+    'scissors',
+    'series',
+    'sewage',
+    'shambles',
+    'shrimp',
+    'species',
+    'staff',
+    'swine',
+    'trout',
+    'tuna',
+    'whiting',
+    'wildebeest',
+    'wildlife',
+    // Regexes.
+    /pox$/i, // "chickpox", "smallpox"
+    /ois$/i,
+    /deer$/i, // "deer", "reindeer"
+    /fish$/i, // "fish", "blowfish", "angelfish"
+    /sheep$/i,
+    /measles$/i,
+    /[^aeiou]ese$/i // "chinese", "japanese"
+  ].forEach(pluralize.addUncountableRule);
+
+  return pluralize;
+});
+
+/*!
+ * inflection
+ * Copyright(c) 2011 Ben Lin <ben@dreamerslab.com>
+ * MIT Licensed
+ *
+ * @fileoverview
+ * A port of inflection-js to node.js module.
+ */
+(function(a,b){if(typeof define==="function"&&define.amd){define([],b);
+}else{if(typeof exports==="object"){module.exports=b();}else{a.inflection=b();}}}(this,function(){var d=["accommodation","adulthood","advertising","advice","aggression","aid","air","aircraft","alcohol","anger","applause","arithmetic","assistance","athletics","bacon","baggage","beef","biology","blood","botany","bread","butter","carbon","cardboard","cash","chalk","chaos","chess","crossroads","countryside","dancing","deer","dignity","dirt","dust","economics","education","electricity","engineering","enjoyment","envy","equipment","ethics","evidence","evolution","fame","fiction","flour","flu","food","fuel","fun","furniture","gallows","garbage","garlic","genetics","gold","golf","gossip","grammar","gratitude","grief","guilt","gymnastics","happiness","hardware","harm","hate","hatred","health","heat","help","homework","honesty","honey","hospitality","housework","humour","hunger","hydrogen","ice","importance","inflation","information","innocence","iron","irony","jam","jewelry","judo","karate","knowledge","lack","laughter","lava","leather","leisure","lightning","linguine","linguini","linguistics","literature","litter","livestock","logic","loneliness","luck","luggage","macaroni","machinery","magic","management","mankind","marble","mathematics","mayonnaise","measles","methane","milk","money","mud","music","mumps","nature","news","nitrogen","nonsense","nurture","nutrition","obedience","obesity","oxygen","pasta","patience","physics","poetry","pollution","poverty","pride","psychology","publicity","punctuation","quartz","racism","relaxation","reliability","research","respect","revenge","rice","rubbish","rum","safety","scenery","seafood","seaside","series","shame","sheep","shopping","sleep","smoke","smoking","snow","soap","software","soil","spaghetti","species","steam","stuff","stupidity","sunshine","symmetry","tennis","thirst","thunder","timber","traffic","transportation","trust","underwear","unemployment","unity","validity","veal","vegetation","vegetarianism","vengeance","violence","vitality","warmth","wealth","weather","welfare","wheat","wildlife","wisdom","yoga","zinc","zoology"];
+var i={plural:{men:new RegExp("^(m)en$","gi"),people:new RegExp("(pe)ople$","gi"),children:new RegExp("(child)ren$","gi"),tia:new RegExp("([ti])a$","gi"),analyses:new RegExp("((a)naly|(b)a|(d)iagno|(p)arenthe|(p)rogno|(s)ynop|(t)he)ses$","gi"),hives:new RegExp("(hi|ti)ves$","gi"),curves:new RegExp("(curve)s$","gi"),lrves:new RegExp("([lr])ves$","gi"),foves:new RegExp("([^fo])ves$","gi"),movies:new RegExp("(m)ovies$","gi"),aeiouyies:new RegExp("([^aeiouy]|qu)ies$","gi"),series:new RegExp("(s)eries$","gi"),xes:new RegExp("(x|ch|ss|sh)es$","gi"),mice:new RegExp("([m|l])ice$","gi"),buses:new RegExp("(bus)es$","gi"),oes:new RegExp("(o)es$","gi"),shoes:new RegExp("(shoe)s$","gi"),crises:new RegExp("(cris|ax|test)es$","gi"),octopi:new RegExp("(octop|vir)i$","gi"),aliases:new RegExp("(alias|status)es$","gi"),summonses:new RegExp("^(summons)es$","gi"),oxen:new RegExp("^(ox)en","gi"),matrices:new RegExp("(matr)ices$","gi"),vertices:new RegExp("(vert|ind)ices$","gi"),feet:new RegExp("^feet$","gi"),teeth:new RegExp("^teeth$","gi"),geese:new RegExp("^geese$","gi"),quizzes:new RegExp("(quiz)zes$","gi"),whereases:new RegExp("^(whereas)es$","gi"),ss:new RegExp("ss$","gi"),s:new RegExp("s$","gi")},singular:{man:new RegExp("^(m)an$","gi"),person:new RegExp("(pe)rson$","gi"),child:new RegExp("(child)$","gi"),ox:new RegExp("^(ox)$","gi"),axis:new RegExp("(ax|test)is$","gi"),octopus:new RegExp("(octop|vir)us$","gi"),alias:new RegExp("(alias|status)$","gi"),summons:new RegExp("^(summons)$","gi"),bus:new RegExp("(bu)s$","gi"),buffalo:new RegExp("(buffal|tomat|potat)o$","gi"),tium:new RegExp("([ti])um$","gi"),sis:new RegExp("sis$","gi"),ffe:new RegExp("(?:([^f])fe|([lr])f)$","gi"),hive:new RegExp("(hi|ti)ve$","gi"),aeiouyy:new RegExp("([^aeiouy]|qu)y$","gi"),x:new RegExp("(x|ch|ss|sh)$","gi"),matrix:new RegExp("(matr)ix$","gi"),vertex:new RegExp("(vert|ind)ex$","gi"),mouse:new RegExp("([m|l])ouse$","gi"),foot:new RegExp("^foot$","gi"),tooth:new RegExp("^tooth$","gi"),goose:new RegExp("^goose$","gi"),quiz:new RegExp("(quiz)$","gi"),whereas:new RegExp("^(whereas)$","gi"),s:new RegExp("s$","gi"),common:new RegExp("$","gi")}};
+var g=[[i.plural.men],[i.plural.people],[i.plural.children],[i.plural.tia],[i.plural.analyses],[i.plural.hives],[i.plural.curves],[i.plural.lrves],[i.plural.foves],[i.plural.aeiouyies],[i.plural.series],[i.plural.movies],[i.plural.xes],[i.plural.mice],[i.plural.buses],[i.plural.oes],[i.plural.shoes],[i.plural.crises],[i.plural.octopi],[i.plural.aliases],[i.plural.summonses],[i.plural.oxen],[i.plural.matrices],[i.plural.feet],[i.plural.teeth],[i.plural.geese],[i.plural.quizzes],[i.plural.whereases],[i.singular.man,"$1en"],[i.singular.person,"$1ople"],[i.singular.child,"$1ren"],[i.singular.ox,"$1en"],[i.singular.axis,"$1es"],[i.singular.octopus,"$1i"],[i.singular.alias,"$1es"],[i.singular.summons,"$1es"],[i.singular.bus,"$1ses"],[i.singular.buffalo,"$1oes"],[i.singular.tium,"$1a"],[i.singular.sis,"ses"],[i.singular.ffe,"$1$2ves"],[i.singular.hive,"$1ves"],[i.singular.aeiouyy,"$1ies"],[i.singular.x,"$1es"],[i.singular.matrix,"$1ices"],[i.singular.vertex,"$1ices"],[i.singular.mouse,"$1ice"],[i.singular.foot,"feet"],[i.singular.tooth,"teeth"],[i.singular.goose,"geese"],[i.singular.quiz,"$1zes"],[i.singular.whereas,"$1es"],[i.singular.s,"s"],[i.singular.common,"s"]];
+var a=[[i.singular.man],[i.singular.person],[i.singular.child],[i.singular.ox],[i.singular.axis],[i.singular.octopus],[i.singular.alias],[i.singular.summons],[i.singular.bus],[i.singular.buffalo],[i.singular.tium],[i.singular.sis],[i.singular.ffe],[i.singular.hive],[i.singular.aeiouyy],[i.singular.x],[i.singular.matrix],[i.singular.mouse],[i.singular.foot],[i.singular.tooth],[i.singular.goose],[i.singular.quiz],[i.singular.whereas],[i.plural.men,"$1an"],[i.plural.people,"$1rson"],[i.plural.children,"$1"],[i.plural.tia,"$1um"],[i.plural.analyses,"$1$2sis"],[i.plural.hives,"$1ve"],[i.plural.curves,"$1"],[i.plural.lrves,"$1f"],[i.plural.foves,"$1fe"],[i.plural.movies,"$1ovie"],[i.plural.aeiouyies,"$1y"],[i.plural.series,"$1eries"],[i.plural.xes,"$1"],[i.plural.mice,"$1ouse"],[i.plural.buses,"$1"],[i.plural.oes,"$1"],[i.plural.shoes,"$1"],[i.plural.crises,"$1is"],[i.plural.octopi,"$1us"],[i.plural.aliases,"$1"],[i.plural.summonses,"$1"],[i.plural.oxen,"$1"],[i.plural.matrices,"$1ix"],[i.plural.vertices,"$1ex"],[i.plural.feet,"foot"],[i.plural.teeth,"tooth"],[i.plural.geese,"goose"],[i.plural.quizzes,"$1"],[i.plural.whereases,"$1"],[i.plural.ss,"ss"],[i.plural.s,""]];
+var c=["and","or","nor","a","an","the","so","but","to","of","at","by","from","into","on","onto","off","out","in","over","with","for"];var k=new RegExp("(_ids|_id)$","g");
+var f=new RegExp("_","g");var j=new RegExp("[ _]","g");var e=new RegExp("([A-Z])","g");var h=new RegExp("^_");var b={_apply_rules:function(q,p,o,n){if(n){q=n;
+}else{var r=(b.indexOf(o,q.toLowerCase())>-1);if(!r){var m=0;var l=p.length;for(;m<l;m++){if(q.match(p[m][0])){if(p[m][1]!==undefined){q=q.replace(p[m][0],p[m][1]);
+}break;}}}}return q;},indexOf:function(l,r,q,m){if(!q){q=-1;}var o=-1;var p=q;var n=l.length;for(;p<n;p++){if(l[p]===r||m&&m(l[p],r)){o=p;break;}}return o;
+},pluralize:function(m,l){return b._apply_rules(m,g,d,l);},singularize:function(m,l){return b._apply_rules(m,a,d,l);},inflect:function(o,n,m,l){n=parseInt(n,10);
+if(isNaN(n)){return o;}if(n===0||n>1){return b._apply_rules(o,g,d,l);}else{return b._apply_rules(o,a,d,m);}},camelize:function(t,o){var v=t.split("/");
+var r=0;var q=v.length;var u,m,p,n,s;for(;r<q;r++){u=v[r].split("_");p=0;n=u.length;for(;p<n;p++){if(p!==0){u[p]=u[p].toLowerCase();}s=u[p].charAt(0);s=o&&r===0&&p===0?s.toLowerCase():s.toUpperCase();
+u[p]=s+u[p].substring(1);}v[r]=u.join("");}return v.join("::");},underscore:function(o,p){if(p&&o===o.toUpperCase()){return o;}var l=o.split("::");var n=0;
+var m=l.length;for(;n<m;n++){l[n]=l[n].replace(e,"_$1");l[n]=l[n].replace(h,"");}return l.join("/").toLowerCase();},humanize:function(m,l){m=m.toLowerCase();
+m=m.replace(k,"");m=m.replace(f," ");if(!l){m=b.capitalize(m);}return m;},capitalize:function(l){l=l.toLowerCase();return l.substring(0,1).toUpperCase()+l.substring(1);
+},dasherize:function(l){return l.replace(j,"-");},titleize:function(s){s=s.toLowerCase().replace(f," ");var q=s.split(" ");var p=0;var o=q.length;var r,n,m;
+for(;p<o;p++){r=q[p].split("-");n=0;m=r.length;for(;n<m;n++){if(b.indexOf(c,r[n].toLowerCase())<0){r[n]=b.capitalize(r[n]);}}q[p]=r.join("-");}s=q.join(" ");
+s=s.substring(0,1).toUpperCase()+s.substring(1);return s;},demodulize:function(m){var l=m.split("::");return l[l.length-1];},tableize:function(l){l=b.underscore(l);
+l=b.pluralize(l);return l;},classify:function(l){l=b.camelize(l);l=b.singularize(l);return l;},foreign_key:function(m,l){m=b.demodulize(m);m=b.underscore(m)+((l)?(""):("_"))+"id";
+return m;},ordinalize:function(s){var q=s.split(" ");var o=0;var n=q.length;for(;o<n;o++){var m=parseInt(q[o],10);if(!isNaN(m)){var r=q[o].substring(q[o].length-2);
+var p=q[o].substring(q[o].length-1);var l="th";if(r!="11"&&r!="12"&&r!="13"){if(p==="1"){l="st";}else{if(p==="2"){l="nd";}else{if(p==="3"){l="rd";}}}}q[o]+=l;
+}}return q.join(" ");},transform:function(o,l){var n=0;var m=l.length;for(;n<m;n++){var p=l[n];if(this.hasOwnProperty(p)){o=this[p](o);}}return o;}};b.version="1.5.3";
+return b;}));
 /*!
  * Bootstrap v3.3.1 (http://getbootstrap.com)
  * Copyright 2011-2014 Twitter, Inc.

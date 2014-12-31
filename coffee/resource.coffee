@@ -5,24 +5,23 @@ dump = (obj)->
     str += key + "=" + obj[key]
   return str
 app = angular.module 'ngBaas',[]
-window.createDirective = (name)->
-  app.directive name,($http)->
-    restrict: "A"
-    link:(scope,elem,attrs)->
-      _id = attrs[name]
-      plur = inflection.pluralize(name)
-      $http.get("/api/#{plur}/#{_id}").
-      success (data)->
-        angular.forEach data,(val,key)->
-          scope[key] = val
-app.factory
-# createDirective 'tweet'
-createDirective 'user'
+.provider 'baas',($compileProvider)->
+  {
+    collection:(name)->
+      $compileProvider.directive name,($http)->
+        restrict: "A"
+        link:(scope,elem,attrs)->
+          _id = attrs[name]
+          plur = inflection.pluralize(name)
+          $http.get("/api/#{plur}/#{_id}").
+          success (data)->
+            angular.forEach data,(val,key)->
+              scope[key] = val
+    $get:->
+      ""
+  }
 app.factory 'Collection',($http)->
   (name)->
-    createDirective 'user'
-    sig = inflection.singularize(name)
-    createDirective sig
     {
       find:(query)->
         result = []

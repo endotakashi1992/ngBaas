@@ -1,8 +1,15 @@
 (function() {
-  angular.module('myApp', ['ngRoute', 'ngResource', 'ngBaas']).controller('tweets', function($scope, Collection) {
+  angular.module('myApp', ['ngRoute', 'ngResource', 'ngBaas']).config(function(baasProvider) {
+    return baasProvider.collection('user');
+  }).controller('tweets', function($scope, Collection) {
     window.Tweets = Collection('tweets');
     return window.Users = Collection('users');
   });
+
+}).call(this);
+
+(function() {
+
 
 }).call(this);
 
@@ -21,36 +28,33 @@
     return str;
   };
 
-  app = angular.module('ngBaas', []);
-
-  window.createDirective = function(name) {
-    return app.directive(name, function($http) {
-      return {
-        restrict: "A",
-        link: function(scope, elem, attrs) {
-          var plur, _id;
-          _id = attrs[name];
-          plur = inflection.pluralize(name);
-          return $http.get("/api/" + plur + "/" + _id).success(function(data) {
-            return angular.forEach(data, function(val, key) {
-              return scope[key] = val;
-            });
-          });
-        }
-      };
-    });
-  };
-
-  app.factory;
-
-  createDirective('user');
+  app = angular.module('ngBaas', []).provider('baas', function($compileProvider) {
+    return {
+      collection: function(name) {
+        return $compileProvider.directive(name, function($http) {
+          return {
+            restrict: "A",
+            link: function(scope, elem, attrs) {
+              var plur, _id;
+              _id = attrs[name];
+              plur = inflection.pluralize(name);
+              return $http.get("/api/" + plur + "/" + _id).success(function(data) {
+                return angular.forEach(data, function(val, key) {
+                  return scope[key] = val;
+                });
+              });
+            }
+          };
+        });
+      },
+      $get: function() {
+        return "";
+      }
+    };
+  });
 
   app.factory('Collection', function($http) {
     return function(name) {
-      var sig;
-      createDirective('user');
-      sig = inflection.singularize(name);
-      createDirective(sig);
       return {
         find: function(query) {
           var es, query_str, result;

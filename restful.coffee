@@ -5,6 +5,8 @@ app = express()
 app.use bodyParser.urlencoded(extended: false)
 app.use bodyParser.json()
 
+port = process.env.PORT || 3000
+
 Datastore = require('nedb')
 collections = {}
 createDB = (name)->
@@ -14,7 +16,6 @@ EventEmitter = require('events').EventEmitter
 ev = new EventEmitter
 
 app.get "/api/:resource", (req, res) ->
-  console.log req.query
   res.writeHead 200,
     "Content-Type": "text/event-stream"
     "Cache-Control": "no-cache"
@@ -64,4 +65,4 @@ app.get "/stream",(req,res)->
     res.write('data: ' + "HEI!!!!" + ' \n\n')
   , 1000
 app.use(express.static(__dirname + '/public'))
-app.listen 3000
+app.listen port

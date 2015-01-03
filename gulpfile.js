@@ -8,6 +8,12 @@ var gulpif = require('gulp-if');
 var plumber = require('gulp-plumber');
 var bower = require('main-bower-files');
 
+gulp.task('dist',function(){
+    gulp.src("**/*.coffee")
+    .pipe(coffee())
+    .pipe(gulp.dest('dist'))
+})
+
 gulp.task('bower', function(){
     gulp.src(bower())
     .pipe(gulpif(/[.]js$/, concat('lib.js')))

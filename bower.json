@@ -19,5 +19,5 @@
     "inflection": "~1.5.3"
   },
   "homepage": "https://github.com/endotakashi1992/ngBaas",
-  "private": true
+  "private": false
 }

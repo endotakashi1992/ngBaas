@@ -1,9 +1,9 @@
 {
-  "name": "chanel",
-  "main":"dist/coffee/resource.js"
+  "name": "ngBaas",
+  "main": "dist/coffee/resource.js",
   "version": "0.0.0",
   "authors": [
-    "Your Name <you@example.com>"
+    "takashi root@endows.tk"
   ],
   "license": "MIT",
   "ignore": [
@@ -17,5 +17,7 @@
     "jquery": "~2.1.1",
     "angular": "1.3.8",
     "inflection": "~1.5.3"
-  }
+  },
+  "homepage": "https://github.com/endotakashi1992/ngBaas",
+  "private": true
 }

@@ -26,7 +26,7 @@ gulp.task('dist',function(){
 gulp.task('deploy',["dist"],shell.task([
   'git add .',
   'git commit -m "deploy!!"',
-  'git push origin master'
+  'git push --force origin master'
 ]))
 
 gulp.task('bower', function(){

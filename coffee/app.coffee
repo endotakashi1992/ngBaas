@@ -1,5 +1,4 @@
-angular.module('myApp', ['ngRoute','ngResource','ngBaas'])
-
+angular.module('myApp', ['ngBaas'])
 .config (baasProvider)->
   baasProvider.collection('user')
 .controller 'tweets',($scope,Users)->

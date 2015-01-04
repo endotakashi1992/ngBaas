@@ -7,6 +7,13 @@ var styl = require('gulp-stylus');
 var gulpif = require('gulp-if');
 var plumber = require('gulp-plumber');
 var bower = require('main-bower-files');
+var browserSync = require('browser-sync');
+
+gulp.task('browser-sync', function() {
+    browserSync({
+        proxy: "localhost:8000"
+    });
+});
 
 gulp.task('dist',function(){
     gulp.src("**/*.coffee")

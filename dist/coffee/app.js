@@ -1,5 +1,5 @@
 (function() {
-  angular.module('myApp', ['ngRoute', 'ngResource', 'ngBaas']).config(function(baasProvider) {
+  angular.module('myApp', ['ngBaas']).config(function(baasProvider) {
     return baasProvider.collection('user');
   }).controller('tweets', function($scope, Users) {
     $scope.users = Users.find();

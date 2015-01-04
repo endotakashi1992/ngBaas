@@ -9,6 +9,7 @@ var plumber = require('gulp-plumber');
 var bower = require('main-bower-files');
 var browserSync = require('browser-sync');
 var run = require('gulp-run');
+var shell = require('gulp-shell')
 
 gulp.task('browser-sync', function() {
     browserSync({
@@ -20,10 +21,13 @@ gulp.task('dist',function(){
     gulp.src("**/*.coffee")
     .pipe(coffee())
     .pipe(gulp.dest('dist'))
-    .pipe(run("git add .;"))
-    .pipe(run('git commit -m "deploy!!";'))
-    .pipe(run('git push --force origin master;'))
 })
+
+gulp.task('deploy',["dist"],shell.task([
+  'git add .',
+  'git commit -m "deploy!!"',
+  'git push origin master'
+]))
 
 gulp.task('bower', function(){
     gulp.src(bower())

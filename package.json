@@ -1,6 +1,6 @@
 {
-  "name": "model",
-  "version": "1.0.1",
+  "name": "angular-baas",
+  "version": "1.0.2",
   "description": "",
   "main": "dist/restful.js",
   "dependencies": {
@@ -30,12 +30,11 @@
     "gulp-shell": "^0.2.11"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "push": "gulp dist;git add .;git commit -m 'deploy';git push origin master"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/endotakashi1992/base"
+    "url": "https://github.com/endotakashi1992/ngBaas"
   },
   "author": "",
   "license": "ISC",

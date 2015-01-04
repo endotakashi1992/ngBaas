@@ -1,0 +1,128 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/home/takashi/.nvm/v0.10.32/bin/node',
+1 verbose cli   '/home/takashi/.nvm/v0.10.32/bin/npm',
+1 verbose cli   'publish',
+1 verbose cli   './' ]
+2 info using npm@1.4.28
+3 info using node@v0.10.32
+4 verbose publish [ './' ]
+5 verbose cache add [ './', null ]
+6 verbose cache add name=undefined spec="./" args=["./",null]
+7 verbose parsed url { protocol: null,
+7 verbose parsed url   slashes: null,
+7 verbose parsed url   auth: null,
+7 verbose parsed url   host: null,
+7 verbose parsed url   port: null,
+7 verbose parsed url   hostname: null,
+7 verbose parsed url   hash: null,
+7 verbose parsed url   search: null,
+7 verbose parsed url   query: null,
+7 verbose parsed url   pathname: './',
+7 verbose parsed url   path: './',
+7 verbose parsed url   href: './' }
+8 silly lockFile 0ee6c175- ./
+9 verbose lock ./ /home/takashi/.npm/0ee6c175-.lock
+10 verbose tar pack [ '/home/takashi/.npm/ngBaas/1.0.2/package.tgz', './' ]
+11 verbose tarball /home/takashi/.npm/ngBaas/1.0.2/package.tgz
+12 verbose folder ./
+13 info prepublish ngBaas@1.0.2
+14 silly lockFile 04cb2bca-tar tar://./
+15 verbose lock tar://./ /home/takashi/.npm/04cb2bca-tar.lock
+16 silly lockFile 7ac4186e-shi-npm-ngBaas-1-0-2-package-tgz tar:///home/takashi/.npm/ngBaas/1.0.2/package.tgz
+17 verbose lock tar:///home/takashi/.npm/ngBaas/1.0.2/package.tgz /home/takashi/.npm/7ac4186e-shi-npm-ngBaas-1-0-2-package-tgz.lock
+18 silly lockFile 04cb2bca-tar tar://./
+19 silly lockFile 04cb2bca-tar tar://./
+20 silly lockFile 7ac4186e-shi-npm-ngBaas-1-0-2-package-tgz tar:///home/takashi/.npm/ngBaas/1.0.2/package.tgz
+21 silly lockFile 7ac4186e-shi-npm-ngBaas-1-0-2-package-tgz tar:///home/takashi/.npm/ngBaas/1.0.2/package.tgz
+22 silly lockFile 222e8e43-takashi-npm-ngBaas-1-0-2-package /home/takashi/.npm/ngBaas/1.0.2/package
+23 verbose lock /home/takashi/.npm/ngBaas/1.0.2/package /home/takashi/.npm/222e8e43-takashi-npm-ngBaas-1-0-2-package.lock
+24 silly lockFile 222e8e43-takashi-npm-ngBaas-1-0-2-package /home/takashi/.npm/ngBaas/1.0.2/package
+25 silly lockFile 222e8e43-takashi-npm-ngBaas-1-0-2-package /home/takashi/.npm/ngBaas/1.0.2/package
+26 silly lockFile 0ee6c175- ./
+27 silly lockFile 0ee6c175- ./
+28 silly publish { name: 'ngBaas',
+28 silly publish   version: '1.0.2',
+28 silly publish   description: 'First,I must tell you that this repo is not official.   Second,I can tell you that this repo is greatness than meanJS.   Third,...thinking.   I conviction that you\'re Hacker.You prefer code to word.',
+28 silly publish   main: 'dist/restful.js',
+28 silly publish   dependencies:
+28 silly publish    { 'body-parser': '^1.10.0',
+28 silly publish      express: '^4.10.6',
+28 silly publish      'express-livereload': '0.0.24',
+28 silly publish      gulp: '^3.8.10',
+28 silly publish      'gulp-coffee': '^2.2.0',
+28 silly publish      'gulp-concat': '^2.4.2',
+28 silly publish      'gulp-if': '^1.2.5',
+28 silly publish      'gulp-jade': '^0.10.0',
+28 silly publish      'gulp-plumber': '^0.6.6',
+28 silly publish      'gulp-stylus': '^1.3.4',
+28 silly publish      'gulp-webserver': '^0.9.0',
+28 silly publish      inflight: '^1.0.4',
+28 silly publish      inherits: '^2.0.1',
+28 silly publish      'lru-cache': '^2.5.0',
+28 silly publish      'main-bower-files': '^2.4.1',
+28 silly publish      mongojs: '^0.18.0',
+28 silly publish      nedb: '^1.0.1',
+28 silly publish      once: '^1.3.1',
+28 silly publish      sigmund: '^1.0.0' },
+28 silly publish   devDependencies:
+28 silly publish    { 'browser-sync': '^1.8.2',
+28 silly publish      'gulp-run': '^1.6.5',
+28 silly publish      'gulp-shell': '^0.2.11' },
+28 silly publish   scripts: { test: 'echo "Error: no test specified" && exit 1' },
+28 silly publish   repository:
+28 silly publish    { type: 'git',
+28 silly publish      url: 'https://github.com/endotakashi1992/ngBaas' },
+28 silly publish   author: '',
+28 silly publish   license: 'ISC',
+28 silly publish   bugs: { url: 'https://github.com/endotakashi1992/base/issues' },
+28 silly publish   homepage: 'https://github.com/endotakashi1992/base',
+28 silly publish   readme: '# This is Baas for only Angular!!\nFirst,I must tell you that this repo is not official.  \nSecond,I can tell you that this repo is greatness than meanJS.  \nThird,...thinking.  \nI conviction that you\'re Hacker.You prefer code to word.  ',
+28 silly publish   readmeFilename: 'README.md',
+28 silly publish   gitHead: '534bf7ace2fb67c585198f677028762c48055181',
+28 silly publish   _id: 'ngBaas@1.0.2',
+28 silly publish   _shasum: '8510707af57904586f68f5ba5268048a49bc0fad',
+28 silly publish   _from: './' }
+29 verbose request where is /ngBaas
+30 verbose request registry https://registry.npmjs.org/
+31 verbose request id 3510158a4ac0ac9b
+32 verbose url raw /ngBaas
+33 verbose url resolving [ 'https://registry.npmjs.org/', './ngBaas' ]
+34 verbose url resolved https://registry.npmjs.org/ngBaas
+35 verbose request where is https://registry.npmjs.org/ngBaas
+36 info trying registry request attempt 1 at 18:33:58
+37 http PUT https://registry.npmjs.org/ngBaas
+38 http 403 https://registry.npmjs.org/ngBaas
+39 verbose headers { date: 'Sun, 04 Jan 2015 09:34:10 GMT',
+39 verbose headers   server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+39 verbose headers   'content-type': 'application/json',
+39 verbose headers   'cache-control': 'max-age=60',
+39 verbose headers   'content-length': '76',
+39 verbose headers   'accept-ranges': 'bytes',
+39 verbose headers   via: '1.1 varnish',
+39 verbose headers   'x-served-by': 'cache-ty68-TYO',
+39 verbose headers   'x-cache': 'MISS',
+39 verbose headers   'x-cache-hits': '0',
+39 verbose headers   'x-timer': 'S1420364039.243495,VS0,VE11078',
+39 verbose headers   'keep-alive': 'timeout=10, max=50',
+39 verbose headers   connection: 'Keep-Alive' }
+40 error publish Failed PUT 403
+41 error Error: forbidden New packages must have all-lowercase names: ngBaas
+41 error     at RegClient.<anonymous> (/home/takashi/.nvm/v0.10.32/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:308:14)
+41 error     at Request._callback (/home/takashi/.nvm/v0.10.32/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:246:65)
+41 error     at Request.self.callback (/home/takashi/.nvm/v0.10.32/lib/node_modules/npm/node_modules/request/request.js:236:22)
+41 error     at Request.emit (events.js:98:17)
+41 error     at Request.<anonymous> (/home/takashi/.nvm/v0.10.32/lib/node_modules/npm/node_modules/request/request.js:1142:14)
+41 error     at Request.emit (events.js:117:20)
+41 error     at IncomingMessage.<anonymous> (/home/takashi/.nvm/v0.10.32/lib/node_modules/npm/node_modules/request/request.js:1096:12)
+41 error     at IncomingMessage.emit (events.js:117:20)
+41 error     at _stream_readable.js:943:16
+41 error     at process._tickCallback (node.js:419:13)
+42 error If you need help, you may report this *entire* log,
+42 error including the npm and node versions, at:
+42 error     <http://github.com/npm/npm/issues>
+43 error System Linux 3.13.0-32-generic
+44 error command "/home/takashi/.nvm/v0.10.32/bin/node" "/home/takashi/.nvm/v0.10.32/bin/npm" "publish" "./"
+45 error cwd /home/takashi/develop/storm
+46 error node -v v0.10.32
+47 error npm -v 1.4.28
+48 verbose exit [ 1, true ]

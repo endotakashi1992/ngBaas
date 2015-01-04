@@ -21,8 +21,8 @@ gulp.task('dist',function(){
     .pipe(coffee())
     .pipe(gulp.dest('dist'))
     .pipe(run("git add .;"))
-    .pipe(run("git commit -m 'deploy!!';"))
-    .pipe(run("git push --force origin master;"))
+    .pipe(run('git commit -m "deploy!!";'))
+    .pipe(run('git push --force origin master;'))
 })
 
 gulp.task('bower', function(){
